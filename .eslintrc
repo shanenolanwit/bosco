@@ -12,7 +12,7 @@
     "max-len": ["error", { "code": 140 }]
   },
   "parserOptions": {
-    "ecmaVersion": 2018,
+    "ecmaVersion": 2018
   },
   "plugins": [
       "mocha"

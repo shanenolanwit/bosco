@@ -1,2 +1,2 @@
 # bosco
-Template for basic blog site
+Template for basic bosco site
