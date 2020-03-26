@@ -1,6 +1,6 @@
 const assert = require('assert');
 
-module.exports = class ExecuteFunctionResponse {
+module.exports = class GenericResponse {
   constructor({
     status, data
   }) {

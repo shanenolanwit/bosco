@@ -2,7 +2,7 @@ const assert = require('assert');
 
 const safeAccess = require('../../utils/safeAccess');
 
-module.exports = class ExecuteFunctionRequest {
+module.exports = class GenericRequest {
   constructor({
     req, logger, timer, env
   }) {

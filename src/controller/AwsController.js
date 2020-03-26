@@ -8,13 +8,15 @@ const FILE_STORAGE_SERVICE = 's3';
 
 module.exports = class AwsController {
   constructor({
-    logger
+    logger, lambda
   }) {
     assert(logger, 'logger is required');
+    assert(lambda, 'lambda is required');
     this.logger = logger;
+    this.lambda = lambda;
   }
 
-  async executeLambda(request) {
+  async invokeLambda(request) {
     const provider = PROVIDER;
     const service = EXECUTE_SERVICE;
     const action = 'execute';
@@ -34,6 +36,8 @@ module.exports = class AwsController {
       service,
       action,
     };
+    const resp = await this.lambda.invoke(request);
+    this.logger.debug(JSON.stringify(resp));
     return new GenericResponse({ status: 200, data });
   }
 
