@@ -1,7 +1,13 @@
 const Express = require('express');
+const safeAccess = require('../utils/safeAccess');
 const GenericRequest = require('../api/request/GenericRequest');
+const InvokeLambdaRequest = require('../api/request/InvokeLambdaRequest');
 
-const useProvider = (requestedProvider, provider) => requestedProvider.toLowerCase() === provider.toLowerCase();
+const injectAppVersionMiddleware = require('../middleware/injectAppVersion');
+const verifyApiKeyMiddleware = require('../middleware/verifyApiKey');
+
+const useAws = (req) => (/aws/i).test(safeAccess(['body', 'provider'], req));
+const useAzure = (req) => (/azure/i).test(safeAccess(['body', 'provider'], req));
 const UNKNOWN_PROVIDER_ERROR = 'Unknown Provider';
 
 module.exports = (deps) => {
@@ -14,14 +20,19 @@ module.exports = (deps) => {
   } = deps;
   const router = Express.Router({ mergeParams: true });
 
+  router.use([injectAppVersionMiddleware, verifyApiKeyMiddleware]);
+
   router.post('/executeFunction', async (req, res) => {
     let resp;
-    const request = new GenericRequest({
-      req, logger, timer, env
-    });
-    if (useProvider(request.getProvider(), 'aws')) {
-      resp = await awsController.executeLambda(request);
-    } else if (useProvider(request.getProvider(), 'azure')) {
+    if (useAws(req)) {
+      const request = new InvokeLambdaRequest({
+        req, logger, timer, env
+      });
+      resp = await awsController.invokeLambda(request);
+    } else if (useAzure(req)) {
+      const request = new GenericRequest({
+        req, logger, timer, env
+      });
       resp = await azureController.executeFunction(request);
     } else {
       logger.error(UNKNOWN_PROVIDER_ERROR);
@@ -34,9 +45,9 @@ module.exports = (deps) => {
     const request = new GenericRequest({
       req, logger, timer, env
     });
-    if (useProvider(request.getProvider(), 'aws')) {
+    if (useAws(req)) {
       resp = await awsController.s3Read(request);
-    } else if (useProvider(request.getProvider(), 'azure')) {
+    } else if (useAzure(req)) {
       resp = await azureController.storageRead(request);
     } else {
       logger.error(UNKNOWN_PROVIDER_ERROR);
@@ -49,9 +60,9 @@ module.exports = (deps) => {
     const request = new GenericRequest({
       req, logger, timer, env
     });
-    if (useProvider(request.getProvider(), 'aws')) {
+    if (useAws(req)) {
       resp = await awsController.s3Write(request);
-    } else if (useProvider(request.getProvider(), 'azure')) {
+    } else if (useAzure(req)) {
       resp = await azureController.storageWrite(request);
     } else {
       logger.error(UNKNOWN_PROVIDER_ERROR);
@@ -64,9 +75,9 @@ module.exports = (deps) => {
     const request = new GenericRequest({
       req, logger, timer, env
     });
-    if (useProvider(request.getProvider(), 'aws')) {
+    if (useAws(req)) {
       resp = await awsController.dynamoRead(request);
-    } else if (useProvider(request.getProvider(), 'azure')) {
+    } else if (useAzure(req)) {
       resp = await azureController.cosmosRead(request);
     } else {
       logger.error(UNKNOWN_PROVIDER_ERROR);
@@ -79,9 +90,9 @@ module.exports = (deps) => {
     const request = new GenericRequest({
       req, logger, timer, env
     });
-    if (useProvider(request.getProvider(), 'aws')) {
+    if (useAws(req)) {
       resp = await awsController.dynamoWrite(request);
-    } else if (useProvider(request.getProvider(), 'azure')) {
+    } else if (useAzure(req)) {
       resp = await azureController.cosmosWrite(request);
     } else {
       logger.error(UNKNOWN_PROVIDER_ERROR);

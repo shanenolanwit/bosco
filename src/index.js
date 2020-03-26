@@ -5,7 +5,6 @@ const router = require('./router');
 const createDependencies = require('./createDependencies');
 const env = require('./getEnvVars')();
 
-
 module.exports.handler = async (event, context, callback) => {
   logger.info(`request to ${event.path}`);
   const deps = createDependencies(logger, env);
