@@ -37,7 +37,7 @@ module.exports = class AwsController {
       action,
     };
     const resp = await this.lambda.invoke(request);
-    console.log(resp);
+    this.logger.debug(JSON.stringify(resp));
     return new GenericResponse({ status: 200, data });
   }
 
