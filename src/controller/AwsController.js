@@ -8,12 +8,14 @@ const FILE_STORAGE_SERVICE = 's3';
 
 module.exports = class AwsController {
   constructor({
-    logger, lambda
+    logger, lambda, dynamo
   }) {
     assert(logger, 'logger is required');
     assert(lambda, 'lambda is required');
+    assert(dynamo, 'dynamo is required');
     this.logger = logger;
     this.lambda = lambda;
+    this.dynamo = dynamo;
   }
 
   async invokeLambda(request) {
@@ -41,10 +43,10 @@ module.exports = class AwsController {
     return new GenericResponse({ status: 200, data });
   }
 
-  async dynamoRead(request) {
+  async dynamoWrite(request) {
     const provider = PROVIDER;
     const service = DATABASE_SERVICE;
-    const action = 'read';
+    const action = 'write';
     this.logger.info(`${provider}:${service}:${action}`);
     this.logger.debug(JSON.stringify(request));
     request.getTimer().start();
@@ -61,13 +63,15 @@ module.exports = class AwsController {
       service,
       action,
     };
+    const resp = await this.dynamo.write(request);
+    this.logger.debug(JSON.stringify(resp));
     return new GenericResponse({ status: 200, data });
   }
 
-  async dynamoWrite(request) {
+  async dynamoRead(request) {
     const provider = PROVIDER;
     const service = DATABASE_SERVICE;
-    const action = 'write';
+    const action = 'read';
     this.logger.info(`${provider}:${service}:${action}`);
     this.logger.debug(JSON.stringify(request));
     request.getTimer().start();
