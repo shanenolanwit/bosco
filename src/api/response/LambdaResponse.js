@@ -12,7 +12,7 @@ module.exports = class LambdaResponse {
     this.status = status;
     this.logResult = logResult;
     this.executedVersion = executedVersion;
-    this.payload = payload;
+    this.payload = JSON.parse(payload);
   }
 
   getStatus() {

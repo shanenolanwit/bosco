@@ -1,6 +1,7 @@
 const AWS = require('aws-sdk');
 const Lambda = require('./api/logic/aws/Lambda');
 const Dynamo = require('./api/logic/aws/Dynamo');
+const S3 = require('./api/logic/aws/S3');
 const AwsController = require('./controller/AwsController');
 const AzureController = require('./controller/AzureController');
 
@@ -13,11 +14,15 @@ module.exports = (logger, env) => {
 
   const lambdaLib = new AWS.Lambda({ apiVersion: '2015-03-31', region: env.AWS_DEFAULT_REGION });
   const dynamoLib = new AWS.DynamoDB.DocumentClient({ apiVersion: '2015-03-31', region: env.AWS_DEFAULT_REGION });
+  const s3Lib = new AWS.S3({ apiVersion: '2015-03-31', region: env.AWS_DEFAULT_REGION });
 
   const lambda = new Lambda({ logger, env, lambdaLib });
   const dynamo = new Dynamo({ logger, env, dynamoLib });
+  const s3 = new S3({ logger, env, s3Lib });
 
-  const awsController = new AwsController({ logger, lambda, dynamo });
+  const awsController = new AwsController({
+    logger, lambda, dynamo, s3
+  });
   const azureController = new AzureController({ logger });
 
   const timer = new Timer({ logger });

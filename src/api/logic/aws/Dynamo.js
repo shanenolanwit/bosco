@@ -32,7 +32,6 @@ module.exports = class Dynamo {
         TransactionID: readFromDynamoRequest.getTransactionID()
       }
     };
-    console.log(params);
     return this.dynamoLib.get(params).promise();
   }
 };

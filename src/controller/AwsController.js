@@ -2,6 +2,8 @@ const assert = require('assert');
 const GenericResponse = require('../api/response/GenericResponse');
 const LambdaResponse = require('../api/response/LambdaResponse');
 const DynamoReadResponse = require('../api/response/DynamoReadResponse');
+const S3WriteResponse = require('../api/response/S3WriteResponse');
+const S3ReadResponse = require('../api/response/S3ReadResponse');
 
 const PROVIDER = 'aws';
 const EXECUTE_SERVICE = 'lambda';
@@ -10,14 +12,16 @@ const FILE_STORAGE_SERVICE = 's3';
 
 module.exports = class AwsController {
   constructor({
-    logger, lambda, dynamo
+    logger, lambda, dynamo, s3
   }) {
     assert(logger, 'logger is required');
     assert(lambda, 'lambda is required');
     assert(dynamo, 'dynamo is required');
+    assert(s3, 's3 is required');
     this.logger = logger;
     this.lambda = lambda;
     this.dynamo = dynamo;
+    this.s3 = s3;
   }
 
   async invokeLambda(request) {
@@ -42,6 +46,7 @@ module.exports = class AwsController {
       provider,
       service,
       action,
+      strategy: request.getStrategy(),
       payload: lambdaResponse.getPayload()
     };
     const status = lambdaResponse.getStatus() || 500;
@@ -66,7 +71,8 @@ module.exports = class AwsController {
       duration,
       provider,
       service,
-      action
+      action,
+      strategy: request.getStrategy()
     };
     const resp = await this.dynamo.write(request);
     this.logger.debug(JSON.stringify(resp));
@@ -95,6 +101,7 @@ module.exports = class AwsController {
       provider,
       service,
       action,
+      strategy: request.getStrategy(),
       payload: dynamoReadResponse.getPayload()
     };
 
@@ -112,14 +119,19 @@ module.exports = class AwsController {
     const startTime = request.getTimer().getStartTime();
     const endTime = request.getTimer().getEndTime();
     const duration = request.getTimer().getDuration();
+    const resp = await this.s3.read(request);
+    this.logger.debug(JSON.stringify(resp));
+    const s3ReadResponse = new S3ReadResponse(resp);
     const data = {
-      implemented: false,
+      implemented: true,
       startTime,
       endTime,
       duration,
       provider,
       service,
       action,
+      strategy: request.getStrategy(),
+      payload: s3ReadResponse.getPayload()
     };
     return new GenericResponse({ status: 200, data });
   }
@@ -135,14 +147,19 @@ module.exports = class AwsController {
     const startTime = request.getTimer().getStartTime();
     const endTime = request.getTimer().getEndTime();
     const duration = request.getTimer().getDuration();
+    const resp = await this.s3.write(request);
+    this.logger.debug(JSON.stringify(resp));
+    const s3WriteResponse = new S3WriteResponse(resp);
     const data = {
-      implemented: false,
+      implemented: true,
       startTime,
       endTime,
       duration,
       provider,
       service,
       action,
+      strategy: request.getStrategy(),
+      payload: s3WriteResponse.getPayload()
     };
     return new GenericResponse({ status: 200, data });
   }

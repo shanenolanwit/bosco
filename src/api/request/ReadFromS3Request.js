@@ -4,20 +4,28 @@ const GenericRequest = require('./GenericRequest');
 
 const DEFAULT_STRATEGY = 'default';
 
-module.exports = class ReadFromDynamoRequest extends GenericRequest {
+module.exports = class ReadFromS3Request extends GenericRequest {
   constructor(deps) {
     super(deps);
     const { req } = deps;
-    const { tableName, strategy, transactionID } = req.body;
-    assert(tableName, 'tableName is required');
+    const {
+      bucketName, strategy, transactionID
+    } = req.body;
+    assert(bucketName, 'bucketName is required');
     assert(transactionID, 'transactionID is required');
-    this.tableName = tableName;
+    assert(transactionID, 'transactionID is required');
     this.strategy = strategy || DEFAULT_STRATEGY;
     this.transactionID = transactionID;
+    this.bucketName = bucketName;
+    this.key = `${strategy}_${transactionID}.json`;
   }
 
-  getTableName() {
-    return this.tableName;
+  getBucketName() {
+    return this.bucketName;
+  }
+
+  getKey() {
+    return this.key;
   }
 
   getStrategy() {

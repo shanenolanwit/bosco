@@ -62,9 +62,11 @@ Template for basic bosco site
 {
 	"provider": "aws",
 	"functionName": "MY_FUNCTION_NAME",
+	"strategy": "STRATEGY_TYPE",
+	"transactionID": "SOME_UNIQUE_IDENTIFIER",
 	"payload" : {
-		"TransactionID": "12345",
-		"Timestamp": 111111
+		"timestamp": OPTIONAL_EPOCH_TIMESTAMP,
+		"message": "SOME_OPTIONAL_MESSAGE"
 	}
 }
 ```
@@ -73,9 +75,11 @@ Template for basic bosco site
 {
 	"provider": "azure",
 	"functionName": "MY_FUNCTION_NAME",
+	"strategy": "STRATEGY_TYPE",
+	"transactionID": "SOME_UNIQUE_IDENTIFIER",
 	"payload" : {
-		"TransactionID": "12345",
-		"Timestamp": 111111
+		"timestamp": OPTIONAL_EPOCH_TIMESTAMP,
+		"message": "SOME_OPTIONAL_MESSAGE"
 	}
 }
 ```
@@ -107,7 +111,7 @@ Template for basic bosco site
         "provider": "aws|azure",
         "service": "lambda|function",
 		"action": "execute",
-		"payload": JSON_STRINGIFIED_LAMBDA_RESULT
+		"payload": LAMBDA_RESULT_OBJECT
     }
 }
 ```
@@ -136,9 +140,9 @@ Template for basic bosco site
 {
 	"provider": "aws",
 	"tableName": "MY_TABLE_NAME",
+	"strategy": "STRATEGY_TYPE",
+	"transactionID": "SOME_UNIQUE_IDENTIFIER",
 	"payload" : {
-		"strategy": "STRATEGY_TYPE",
-		"transactionID": "SOME_UNIQUE_IDENTIFIER",
 		"timestamp": OPTIONAL_EPOCH_TIMESTAMP,
 		"message": "SOME_OPTIONAL_MESSAGE"
 	}
@@ -149,9 +153,9 @@ Template for basic bosco site
 {
 	"provider": "azure",
 	"tableName": "MY_TABLE_NAME",
+	"strategy": "STRATEGY_TYPE",
+	"transactionID": "SOME_UNIQUE_IDENTIFIER",
 	"payload" : {
-		"strategy": "STRATEGY_TYPE",
-		"transactionID": "SOME_UNIQUE_IDENTIFIER",
 		"timestamp": OPTIONAL_EPOCH_TIMESTAMP,
 		"message": "SOME_OPTIONAL_MESSAGE"
 	}
@@ -264,4 +268,165 @@ Template for basic bosco site
 }
 ```
 
+***
+
+### Write to File
+
+| Summary | |
+| - | - |
+| Description | Writes specified data to file |
+| Endpoint | `/bosco/writeToFile` |
+| Verb | POST |
+
+#### Request Headers
+
+| Key | Value |
+| - | - |
+| Content-Type | application/json |
+| Authorization | BOSCO_API_KEY |
+
+#### Request Body
+##### write to s3
+```json
+{
+	"provider": "aws",
+	"bucketName": "BUCKET_NAME",
+	"strategy": "STRATEGY_TYPE",
+	"transactionID": "SOME_UNIQUE_IDENTIFIER",
+	"encryptionMethod": "OPTIONAL_SEE_S3_DOCS",
+	"storageClass": "OPTIONAL_SEE_S3_DOCS",
+	"payload" : {
+		"timestamp": OPTIONAL_EPOCH_TIMESTAMP,
+		"message": "SOME_OPTIONAL_MESSAGE"
+	}
+}
+```
+##### write to azure storage
+```json
+{
+	"provider": "azure",
+	"bucketName": "BUCKET_NAME",
+	"strategy": "STRATEGY_TYPE",
+	"transactionID": "SOME_UNIQUE_IDENTIFIER",
+	"encryptionMethod": "OPTIONAL_SEE_S3_DOCS",
+	"storageClass": "OPTIONAL_SEE_S3_DOCS",
+	"payload" : {
+		"timestamp": OPTIONAL_EPOCH_TIMESTAMP,
+		"message": "SOME_OPTIONAL_MESSAGE"
+	}
+}
+```
+
+#### Responses
+
+| Status Code | Description |
+| - | - |
+| 200 | Success - Payload written to file |
+| 401 | Unauthorized request - Invalid API key sent in auth header. |
+| 500 | Internal Server Error |
+
+#### Response Headers
+
+| Key | Value |
+| - | - |
+| Version | BOSCO_VERSION |
+| Content-Type | application/json |
+
+#### Response Body
+```json
+{
+    "status": 200,
+    "data": {
+        "implemented": true, 
+        "startTime": START_TIME_EPOCH,
+        "endTime": END_TIME_EPOCH,
+        "duration": DIFFERENCE_BETWEEN_START_AND_END_TIME,
+        "provider": "aws|azure",
+        "service": "dynamodb|cosmosdb",
+		"action": "read",
+		"payload": {
+            "eTag": "SOME_ETAG",
+            "serverSideEncryption": "ENCRYPTION_TYPE",
+        }
+    }
+}
+```
+
+***
+
+### Read from File
+
+| Summary | |
+| - | - |
+| Description | Extracts contents from a specified file |
+| Endpoint | `/bosco/readFromFile` |
+| Verb | POST |
+
+#### Request Headers
+
+| Key | Value |
+| - | - |
+| Content-Type | application/json |
+| Authorization | BOSCO_API_KEY |
+
+#### Request Body
+##### read from s3
+```json
+{
+	"provider": "aws",
+	"bucketName": "BUCKET_NAME",
+	"strategy": "STRATEGY_TYPE",
+	"transactionID": "SOME_UNIQUE_IDENTIFIER"
+}
+```
+##### read from azure storage
+```json
+{
+	"provider": "azure",
+	"bucketName": "BUCKET_NAME",
+	"strategy": "STRATEGY_TYPE",
+	"transactionID": "SOME_UNIQUE_IDENTIFIER",
+}
+```
+
+#### Responses
+
+| Status Code | Description |
+| - | - |
+| 200 | Success - Payload extracted from file |
+| 401 | Unauthorized request - Invalid API key sent in auth header. |
+| 500 | Internal Server Error |
+
+#### Response Headers
+
+| Key | Value |
+| - | - |
+| Version | BOSCO_VERSION |
+| Content-Type | application/json |
+
+#### Response Body
+```json
+{
+    "status": 200,
+    "data": {
+        "implemented": true, 
+        "startTime": START_TIME_EPOCH,
+        "endTime": END_TIME_EPOCH,
+        "duration": DIFFERENCE_BETWEEN_START_AND_END_TIME,
+        "provider": "aws|azure",
+        "service": "dynamodb|cosmosdb",
+		"action": "read",
+		"payload": {
+            "acceptRanges": "bytes",
+            "eTag": "SOME_ETAG",
+            "serverSideEncryption": "ENCRYPTION_TYPE",
+            "lastModified": "DATE_TIME_AS_STRING",
+            "contentLength": 123,
+            "storageClass": "STORAGE_TYPE",
+            "metadata": {}, // FILE METADATA
+            "content": {} // FILE CONTENT
+        }
+    }
+}
+```
 
