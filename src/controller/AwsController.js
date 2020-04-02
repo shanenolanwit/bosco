@@ -1,5 +1,7 @@
 const assert = require('assert');
 const GenericResponse = require('../api/response/GenericResponse');
+const LambdaResponse = require('../api/response/LambdaResponse');
+const DynamoReadResponse = require('../api/response/DynamoReadResponse');
 
 const PROVIDER = 'aws';
 const EXECUTE_SERVICE = 'lambda';
@@ -29,18 +31,21 @@ module.exports = class AwsController {
     const startTime = request.getTimer().getStartTime();
     const endTime = request.getTimer().getEndTime();
     const duration = request.getTimer().getDuration();
+    const resp = await this.lambda.invoke(request);
+    this.logger.debug(JSON.stringify(resp));
+    const lambdaResponse = new LambdaResponse(resp);
     const data = {
-      implemented: false,
+      implemented: true,
       startTime,
       endTime,
       duration,
       provider,
       service,
       action,
+      payload: lambdaResponse.getPayload()
     };
-    const resp = await this.lambda.invoke(request);
-    this.logger.debug(JSON.stringify(resp));
-    return new GenericResponse({ status: 200, data });
+    const status = lambdaResponse.getStatus() || 500;
+    return new GenericResponse({ status, data });
   }
 
   async dynamoWrite(request) {
@@ -55,13 +60,13 @@ module.exports = class AwsController {
     const endTime = request.getTimer().getEndTime();
     const duration = request.getTimer().getDuration();
     const data = {
-      implemented: false,
+      implemented: true,
       startTime,
       endTime,
       duration,
       provider,
       service,
-      action,
+      action
     };
     const resp = await this.dynamo.write(request);
     this.logger.debug(JSON.stringify(resp));
@@ -79,15 +84,20 @@ module.exports = class AwsController {
     const startTime = request.getTimer().getStartTime();
     const endTime = request.getTimer().getEndTime();
     const duration = request.getTimer().getDuration();
+    const resp = await this.dynamo.read(request);
+    this.logger.debug(JSON.stringify(resp));
+    const dynamoReadResponse = new DynamoReadResponse(resp);
     const data = {
-      implemented: false,
+      implemented: true,
       startTime,
       endTime,
       duration,
       provider,
       service,
       action,
+      payload: dynamoReadResponse.getPayload()
     };
+
     return new GenericResponse({ status: 200, data });
   }
 

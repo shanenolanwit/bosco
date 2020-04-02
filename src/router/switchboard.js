@@ -3,6 +3,7 @@ const safeAccess = require('../utils/safeAccess');
 const GenericRequest = require('../api/request/GenericRequest');
 const InvokeLambdaRequest = require('../api/request/InvokeLambdaRequest');
 const WriteToDynamoRequest = require('../api/request/WriteToDynamoRequest');
+const ReadFromDynamoRequest = require('../api/request/ReadFromDynamoRequest');
 
 const injectAppVersionMiddleware = require('../middleware/injectAppVersion');
 const verifyApiKeyMiddleware = require('../middleware/verifyApiKey');
@@ -73,10 +74,11 @@ module.exports = (deps) => {
 
   router.post('/readFromDatabase', async (req, res) => {
     let resp;
-    const request = new GenericRequest({
-      req, logger, timer, env
-    });
+    let request;
     if (useAws(req)) {
+      request = new ReadFromDynamoRequest({
+        req, logger, timer, env
+      });
       resp = await awsController.dynamoRead(request);
     } else if (useAzure(req)) {
       resp = await azureController.cosmosRead(request);
@@ -88,10 +90,11 @@ module.exports = (deps) => {
 
   router.post('/writeToDatabase', async (req, res) => {
     let resp;
-    const request = new WriteToDynamoRequest({
-      req, logger, timer, env
-    });
+    let request;
     if (useAws(req)) {
+      request = new WriteToDynamoRequest({
+        req, logger, timer, env
+      });
       resp = await awsController.dynamoWrite(request);
     } else if (useAzure(req)) {
       resp = await azureController.cosmosWrite(request);

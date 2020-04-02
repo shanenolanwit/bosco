@@ -2,8 +2,8 @@ const assert = require('assert');
 
 const GenericRequest = require('./GenericRequest');
 
-const DEFAULT_INVOCATION_TYPE = 'RequestResponse';
-const DEFAULT_LOG_TYPE = 'Tail'; // TODO: could be none based on log level maybe
+const DEFAULT_INVOCATION_TYPE = 'RequestResponse'; // sync
+const DEFAULT_LOG_TYPE = 'Tail';
 
 module.exports = class ExecuteFunctionRequest extends GenericRequest {
   constructor(deps) {
