@@ -2,6 +2,7 @@ const Express = require('express');
 const safeAccess = require('../utils/safeAccess');
 const GenericRequest = require('../api/request/GenericRequest');
 const InvokeLambdaRequest = require('../api/request/InvokeLambdaRequest');
+const WriteToDynamoRequest = require('../api/request/WriteToDynamoRequest');
 
 const injectAppVersionMiddleware = require('../middleware/injectAppVersion');
 const verifyApiKeyMiddleware = require('../middleware/verifyApiKey');
@@ -87,7 +88,7 @@ module.exports = (deps) => {
 
   router.post('/writeToDatabase', async (req, res) => {
     let resp;
-    const request = new GenericRequest({
+    const request = new WriteToDynamoRequest({
       req, logger, timer, env
     });
     if (useAws(req)) {
