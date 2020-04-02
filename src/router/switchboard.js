@@ -4,6 +4,8 @@ const GenericRequest = require('../api/request/GenericRequest');
 const InvokeLambdaRequest = require('../api/request/InvokeLambdaRequest');
 const WriteToDynamoRequest = require('../api/request/WriteToDynamoRequest');
 const ReadFromDynamoRequest = require('../api/request/ReadFromDynamoRequest');
+const WriteToS3Request = require('../api/request/WriteToS3Request');
+const ReadFromS3Request = require('../api/request/ReadFromS3Request');
 
 const injectAppVersionMiddleware = require('../middleware/injectAppVersion');
 const verifyApiKeyMiddleware = require('../middleware/verifyApiKey');
@@ -44,10 +46,11 @@ module.exports = (deps) => {
 
   router.post('/readFromFile', async (req, res) => {
     let resp;
-    const request = new GenericRequest({
-      req, logger, timer, env
-    });
+    let request;
     if (useAws(req)) {
+      request = new ReadFromS3Request({
+        req, logger, timer, env
+      });
       resp = await awsController.s3Read(request);
     } else if (useAzure(req)) {
       resp = await azureController.storageRead(request);
@@ -59,10 +62,11 @@ module.exports = (deps) => {
 
   router.post('/writeToFile', async (req, res) => {
     let resp;
-    const request = new GenericRequest({
-      req, logger, timer, env
-    });
+    let request;
     if (useAws(req)) {
+      request = new WriteToS3Request({
+        req, logger, timer, env
+      });
       resp = await awsController.s3Write(request);
     } else if (useAzure(req)) {
       resp = await azureController.storageWrite(request);
