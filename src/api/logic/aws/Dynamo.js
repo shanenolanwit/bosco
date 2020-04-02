@@ -1,6 +1,6 @@
 const assert = require('assert');
 
-module.exports = class Lambda {
+module.exports = class Dynamo {
   constructor({ logger, env, dynamoLib }) {
     assert(logger, 'logger is required');
     assert(env, 'env is required');
@@ -10,11 +10,29 @@ module.exports = class Lambda {
     this.dynamoLib = dynamoLib;
   }
 
+  // TODO: Individual items cannot exceed 400kb - confirm this ??
   async write(writeToDynamoRequest) {
     const params = {
-      TableName: writeToDynamoRequest.getTableName(),
-      Item: writeToDynamoRequest.getPayload()
+      TransactItems: [{
+        Put: {
+          TableName: writeToDynamoRequest.getTableName(),
+          Item: writeToDynamoRequest.getPayload()
+        }
+      }]
     };
-    return this.dynamoLib.put(params).promise();
+
+    return this.dynamoLib.transactWrite(params).promise();
+  }
+
+  async read(readFromDynamoRequest) {
+    const params = {
+      TableName: readFromDynamoRequest.getTableName(),
+      Key: {
+        Strategy: readFromDynamoRequest.getStrategy(),
+        TransactionID: readFromDynamoRequest.getTransactionID()
+      }
+    };
+    console.log(params);
+    return this.dynamoLib.get(params).promise();
   }
 };
