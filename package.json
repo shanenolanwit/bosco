@@ -4,6 +4,7 @@
   "description": "Template for basic blog site",
   "main": "index.js",
   "scripts": {
+    "depcheck": "./node_modules/.bin/depcheck .",
     "start": "node src/index.js",
     "local": "nodemon app.local.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -19,7 +20,7 @@
   },
   "homepage": "https://github.com/shanenolanwit/bosco#readme",
   "devDependencies": {
-    "depcheck": "^0.8.3",
+    "depcheck": "^0.8.4",
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.1.0",
     "eslint-plugin-import": "^2.20.1",
@@ -30,8 +31,9 @@
     "supertest": "^4.0.2"
   },
   "dependencies": {
-    "dotenv": "^8.2.0",
+    "@azure/cosmos": "^3.6.2",
     "aws-sdk": "^2.633.0",
+    "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "loglevel": "^1.6.7",
     "serverless-http": "^2.3.2"

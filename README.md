@@ -134,7 +134,6 @@ Template for basic bosco site
 | Authorization | BOSCO_API_KEY |
 
 #### Request Body
-- TransactionID does not need to be globally unique but should be unique within a particular strategy
 ##### write to dynamo
 ```json
 {
@@ -142,10 +141,8 @@ Template for basic bosco site
 	"tableName": "MY_TABLE_NAME",
 	"strategy": "STRATEGY_TYPE",
 	"transactionID": "SOME_UNIQUE_IDENTIFIER",
-	"payload" : {
-		"timestamp": OPTIONAL_EPOCH_TIMESTAMP,
-		"message": "SOME_OPTIONAL_MESSAGE"
-	}
+	"timestamp": OPTIONAL_EPOCH_TIMESTAMP,
+	"message": "SOME_OPTIONAL_MESSAGE"
 }
 ```
 ##### write to cosmos
@@ -155,10 +152,8 @@ Template for basic bosco site
 	"tableName": "MY_TABLE_NAME",
 	"strategy": "STRATEGY_TYPE",
 	"transactionID": "SOME_UNIQUE_IDENTIFIER",
-	"payload" : {
-		"timestamp": OPTIONAL_EPOCH_TIMESTAMP,
-		"message": "SOME_OPTIONAL_MESSAGE"
-	}
+	"timestamp": OPTIONAL_EPOCH_TIMESTAMP,
+	"message": "SOME_OPTIONAL_MESSAGE"
 }
 ```
 
@@ -246,7 +241,6 @@ Template for basic bosco site
 | Content-Type | application/json |
 
 #### Response Body
-- TransactionID is not globally unique but should be unique within a particular strategy
 ```json
 {
     "status": 200,

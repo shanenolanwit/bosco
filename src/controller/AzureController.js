@@ -1,5 +1,6 @@
 const assert = require('assert');
 const GenericResponse = require('../api/response/GenericResponse');
+const CosmosReadResponse = require('../api/response/CosmosReadResponse');
 
 const PROVIDER = 'azure';
 const EXECUTE_SERVICE = 'function';
@@ -8,10 +9,12 @@ const FILE_STORAGE_SERVICE = 'storage';
 
 module.exports = class AzureController {
   constructor({
-    logger
+    logger, cosmos
   }) {
     assert(logger, 'logger is required');
+    assert(cosmos, 'cosmos is required');
     this.logger = logger;
+    this.cosmos = cosmos;
   }
 
   async executeFunction(request) {
@@ -48,6 +51,8 @@ module.exports = class AzureController {
     const startTime = request.getTimer().getStartTime();
     const endTime = request.getTimer().getEndTime();
     const duration = request.getTimer().getDuration();
+    const resp = await this.cosmos.read(request);
+    const cosmosReadResponse = new CosmosReadResponse(resp);
     const data = {
       implemented: false,
       startTime,
@@ -56,6 +61,8 @@ module.exports = class AzureController {
       provider,
       service,
       action,
+      strategy: request.getStrategy(),
+      payload: cosmosReadResponse.getPayload()
     };
     return new GenericResponse({ status: 200, data });
   }
@@ -71,6 +78,7 @@ module.exports = class AzureController {
     const startTime = request.getTimer().getStartTime();
     const endTime = request.getTimer().getEndTime();
     const duration = request.getTimer().getDuration();
+    await this.cosmos.write(request);
     const data = {
       implemented: false,
       startTime,
@@ -79,6 +87,7 @@ module.exports = class AzureController {
       provider,
       service,
       action,
+      strategy: request.getStrategy()
     };
     return new GenericResponse({ status: 200, data });
   }
