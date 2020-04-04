@@ -7,6 +7,9 @@ const ReadFromDynamoRequest = require('../api/request/ReadFromDynamoRequest');
 const WriteToS3Request = require('../api/request/WriteToS3Request');
 const ReadFromS3Request = require('../api/request/ReadFromS3Request');
 
+const WriteToCosmosRequest = require('../api/request/WriteToCosmosRequest');
+const ReadFromCosmosRequest = require('../api/request/ReadFromCosmosRequest');
+
 const injectAppVersionMiddleware = require('../middleware/injectAppVersion');
 const verifyApiKeyMiddleware = require('../middleware/verifyApiKey');
 
@@ -85,6 +88,9 @@ module.exports = (deps) => {
       });
       resp = await awsController.dynamoRead(request);
     } else if (useAzure(req)) {
+      request = new ReadFromCosmosRequest({
+        req, logger, timer, env
+      });
       resp = await azureController.cosmosRead(request);
     } else {
       logger.error(UNKNOWN_PROVIDER_ERROR);
@@ -101,9 +107,16 @@ module.exports = (deps) => {
       });
       resp = await awsController.dynamoWrite(request);
     } else if (useAzure(req)) {
+      request = new WriteToCosmosRequest({
+        req, logger, timer, env
+      });
       resp = await azureController.cosmosWrite(request);
     } else {
       logger.error(UNKNOWN_PROVIDER_ERROR);
+      resp = {
+        getStatus: () => 404,
+        getData: () => ({ message: 'unknown provider' })
+      };
     }
     return res.status(200).send({ status: resp.getStatus(), data: resp.getData() });
   });
