@@ -1,10 +1,12 @@
 const AWS = require('aws-sdk');
+const fetch = require('node-fetch');
 const { AbortController } = require('@azure/abort-controller');
 const { CosmosClient } = require('@azure/cosmos');
 const {
   BlobServiceClient, StorageSharedKeyCredential
 } = require('@azure/storage-blob');
 
+const FunctionApp = require('./api/logic/azure/FunctionApp');
 const Cosmos = require('./api/logic/azure/Cosmos');
 const Storage = require('./api/logic/azure/Storage');
 const Lambda = require('./api/logic/aws/Lambda');
@@ -32,18 +34,18 @@ module.exports = (logger, env) => {
   const storageCredentials = new StorageSharedKeyCredential(env.STORAGE_ACCOUNT_NAME, env.STORAGE_KEY);
   const storageLib = new BlobServiceClient(`https://${env.STORAGE_ACCOUNT_NAME}.blob.core.windows.net`, storageCredentials);
 
-
   const timeoutFunction = AbortController.timeout(ONE_MINUTE);
   const cosmos = new Cosmos({ logger, env, cosmosLib });
   const storage = new Storage({
     logger, env, storageLib, timeoutFunction
   });
+  const functionApp = new FunctionApp({ logger, env, fetch });
 
   const awsController = new AwsController({
     logger, lambda, dynamo, s3
   });
   const azureController = new AzureController({
-    logger, cosmos, storage
+    logger, functionApp, cosmos, storage
   });
 
   return {

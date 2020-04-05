@@ -1,12 +1,13 @@
 const Express = require('express');
 const safeAccess = require('../utils/safeAccess');
-const GenericRequest = require('../api/request/GenericRequest');
+
 const InvokeLambdaRequest = require('../api/request/InvokeLambdaRequest');
 const WriteToDynamoRequest = require('../api/request/WriteToDynamoRequest');
 const ReadFromDynamoRequest = require('../api/request/ReadFromDynamoRequest');
 const WriteToS3Request = require('../api/request/WriteToS3Request');
 const ReadFromS3Request = require('../api/request/ReadFromS3Request');
 
+const InvokeFunctionRequest = require('../api/request/InvokeFunctionRequest');
 const WriteToCosmosRequest = require('../api/request/WriteToCosmosRequest');
 const ReadFromCosmosRequest = require('../api/request/ReadFromCosmosRequest');
 const WriteToStorageRequest = require('../api/request/WriteToStorageRequest');
@@ -38,7 +39,7 @@ module.exports = (deps) => {
       });
       resp = await awsController.invokeLambda(request);
     } else if (useAzure(req)) {
-      const request = new GenericRequest({
+      const request = new InvokeFunctionRequest({
         req, logger, env
       });
       resp = await azureController.executeFunction(request);

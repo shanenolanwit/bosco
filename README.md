@@ -1,7 +1,6 @@
 # bosco
 Template for basic bosco site
 
-
 ## API
 
 ***
@@ -70,11 +69,11 @@ Template for basic bosco site
 	}
 }
 ```
-##### execute azure-function
+##### execute function-app
 ```json
 {
 	"provider": "azure",
-	"functionName": "MY_FUNCTION_NAME",
+	"functionName": "AZURE_FUNCTION_URL",
 	"strategy": "STRATEGY_TYPE",
 	"transactionID": "SOME_UNIQUE_IDENTIFIER",
 	"payload" : {
