@@ -4,17 +4,14 @@ const GenericRequest = require('./GenericRequest');
 
 const DEFAULT_MESSAGE = 'na';
 
-const DEFAULT_ENCRYPTION_METHOD = 'AES256';
-const DEFAULT_STORAGE_CLASS = 'STANDARD_IA';
 const DEFAULT_STRATEGY = 'default';
 
-module.exports = class WriteToS3Request extends GenericRequest {
+module.exports = class WriteToStorageRequest extends GenericRequest {
   constructor(deps) {
     super(deps);
     const { req } = deps;
     const {
-      bucketName, strategy, transactionID,
-      timestamp, message, encryptionMethod, storageClass
+      bucketName, strategy, transactionID, timestamp, message
     } = req.body;
     assert(bucketName, 'bucketName is required');
     assert(transactionID, 'transactionID is required');
@@ -24,8 +21,6 @@ module.exports = class WriteToS3Request extends GenericRequest {
     this.key = `${strategy}_${transactionID}.json`;
     this.timestamp = timestamp || Date.now();
     this.message = message || DEFAULT_MESSAGE;
-    this.encryptionMethod = encryptionMethod || DEFAULT_ENCRYPTION_METHOD;
-    this.storageClass = storageClass || DEFAULT_STORAGE_CLASS;
   }
 
   getStrategy() {
@@ -40,14 +35,6 @@ module.exports = class WriteToS3Request extends GenericRequest {
     return this.key;
   }
 
-  getEncryptionMethod() {
-    return this.encryptionMethod;
-  }
-
-  getStorageClass() {
-    return this.storageClass;
-  }
-
   getPayload() {
     return {
       Strategy: this.strategy,
@@ -55,9 +42,7 @@ module.exports = class WriteToS3Request extends GenericRequest {
       Timestamp: this.timestamp,
       Message: this.message,
       BucketName: this.bucketName,
-      Key: this.key,
-      EncryptionMethod: this.encryptionMethod,
-      StorageClass: this.storageClass
+      Key: this.key
     };
   }
 };

@@ -17,7 +17,20 @@ module.exports = class Cosmos {
     this.database = env.COSMOS_DATABASE;
   }
 
+  async createContainer(writeToCosmosRequest) {
+    const containerId = writeToCosmosRequest.getTableName();
+    const partitionKey = { kind: 'Hash', paths: ['/Strategy'] };
+    await this.cosmosLib
+      .database(this.database)
+      .containers.createIfNotExists(
+        { id: containerId, partitionKey },
+        { offerThroughput: 400 }
+      );
+  }
+
   async write(writeToCosmosRequest) {
+    // TODO add a field to write request that specifies if you should create if not exists
+    // await this.createContainer(writeToCosmosRequest);
     return this.cosmosLib
       .database(this.database)
       .container(writeToCosmosRequest.getTableName())

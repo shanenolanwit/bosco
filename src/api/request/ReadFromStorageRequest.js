@@ -4,7 +4,7 @@ const GenericRequest = require('./GenericRequest');
 
 const DEFAULT_STRATEGY = 'default';
 
-module.exports = class ReadFromS3Request extends GenericRequest {
+module.exports = class ReadFromStorageRequest extends GenericRequest {
   constructor(deps) {
     super(deps);
     const { req } = deps;

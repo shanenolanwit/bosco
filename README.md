@@ -289,10 +289,8 @@ Template for basic bosco site
 	"transactionID": "SOME_UNIQUE_IDENTIFIER",
 	"encryptionMethod": "OPTIONAL_SEE_S3_DOCS",
 	"storageClass": "OPTIONAL_SEE_S3_DOCS",
-	"payload" : {
-		"timestamp": OPTIONAL_EPOCH_TIMESTAMP,
-		"message": "SOME_OPTIONAL_MESSAGE"
-	}
+	"timestamp": OPTIONAL_EPOCH_TIMESTAMP,
+	"message": "SOME_OPTIONAL_MESSAGE"
 }
 ```
 ##### write to azure storage
@@ -302,12 +300,8 @@ Template for basic bosco site
 	"bucketName": "BUCKET_NAME",
 	"strategy": "STRATEGY_TYPE",
 	"transactionID": "SOME_UNIQUE_IDENTIFIER",
-	"encryptionMethod": "OPTIONAL_SEE_S3_DOCS",
-	"storageClass": "OPTIONAL_SEE_S3_DOCS",
-	"payload" : {
-		"timestamp": OPTIONAL_EPOCH_TIMESTAMP,
-		"message": "SOME_OPTIONAL_MESSAGE"
-	}
+	"timestamp": OPTIONAL_EPOCH_TIMESTAMP,
+	"message": "SOME_OPTIONAL_MESSAGE"
 }
 ```
 
