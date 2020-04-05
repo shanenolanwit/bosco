@@ -1,13 +1,19 @@
 const AWS = require('aws-sdk');
+const { AbortController } = require('@azure/abort-controller');
 const { CosmosClient } = require('@azure/cosmos');
+const {
+  BlobServiceClient, StorageSharedKeyCredential
+} = require('@azure/storage-blob');
+
 const Cosmos = require('./api/logic/azure/Cosmos');
+const Storage = require('./api/logic/azure/Storage');
 const Lambda = require('./api/logic/aws/Lambda');
 const Dynamo = require('./api/logic/aws/Dynamo');
 const S3 = require('./api/logic/aws/S3');
 const AwsController = require('./controller/AwsController');
 const AzureController = require('./controller/AzureController');
 
-const Timer = require('./utils/Timer');
+const ONE_MINUTE = 60 * 1000;
 
 module.exports = (logger, env) => {
   logger.setDefaultLevel(env.LOG_LEVEL);
@@ -23,22 +29,27 @@ module.exports = (logger, env) => {
   const s3 = new S3({ logger, env, s3Lib });
 
   const cosmosLib = new CosmosClient({ endpoint: env.COSMOS_ENDPOINT, key: env.COSMOS_KEY });
+  const storageCredentials = new StorageSharedKeyCredential(env.STORAGE_ACCOUNT_NAME, env.STORAGE_KEY);
+  const storageLib = new BlobServiceClient(`https://${env.STORAGE_ACCOUNT_NAME}.blob.core.windows.net`, storageCredentials);
 
+
+  const timeoutFunction = AbortController.timeout(ONE_MINUTE);
   const cosmos = new Cosmos({ logger, env, cosmosLib });
+  const storage = new Storage({
+    logger, env, storageLib, timeoutFunction
+  });
 
   const awsController = new AwsController({
     logger, lambda, dynamo, s3
   });
   const azureController = new AzureController({
-    logger, cosmos
+    logger, cosmos, storage
   });
 
-  const timer = new Timer({ logger });
   return {
     logger,
     awsController,
     azureController,
-    timer,
     env
   };
 };

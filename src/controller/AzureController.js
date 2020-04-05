@@ -1,6 +1,8 @@
 const assert = require('assert');
 const GenericResponse = require('../api/response/GenericResponse');
 const CosmosReadResponse = require('../api/response/CosmosReadResponse');
+const StorageReadResponse = require('../api/response/StorageReadResponse');
+const StorageWriteResponse = require('../api/response/StorageWriteResponse');
 
 const PROVIDER = 'azure';
 const EXECUTE_SERVICE = 'function';
@@ -9,12 +11,14 @@ const FILE_STORAGE_SERVICE = 'storage';
 
 module.exports = class AzureController {
   constructor({
-    logger, cosmos
+    logger, cosmos, storage
   }) {
     assert(logger, 'logger is required');
     assert(cosmos, 'cosmos is required');
+    assert(storage, 'storage is required');
     this.logger = logger;
     this.cosmos = cosmos;
+    this.storage = storage;
   }
 
   async executeFunction(request) {
@@ -23,16 +27,13 @@ module.exports = class AzureController {
     const action = 'execute';
     this.logger.info(`${provider}:${service}:${action}`);
     this.logger.debug(JSON.stringify(request));
-    request.getTimer().start();
-    request.getTimer().stop();
-    const startTime = request.getTimer().getStartTime();
-    const endTime = request.getTimer().getEndTime();
-    const duration = request.getTimer().getDuration();
+    const startTime = new Date().getTime();
+    const endTime = new Date().getTime();
     const data = {
       implemented: false,
       startTime,
       endTime,
-      duration,
+      duration: (endTime - startTime),
       provider,
       service,
       action,
@@ -46,18 +47,17 @@ module.exports = class AzureController {
     const action = 'read';
     this.logger.info(`${provider}:${service}:${action}`);
     this.logger.debug(JSON.stringify(request));
-    request.getTimer().start();
-    request.getTimer().stop();
-    const startTime = request.getTimer().getStartTime();
-    const endTime = request.getTimer().getEndTime();
-    const duration = request.getTimer().getDuration();
+
+    const startTime = new Date().getTime();
     const resp = await this.cosmos.read(request);
     const cosmosReadResponse = new CosmosReadResponse(resp);
+    const endTime = new Date().getTime();
+
     const data = {
-      implemented: false,
+      implemented: true,
       startTime,
       endTime,
-      duration,
+      duration: (endTime - startTime),
       provider,
       service,
       action,
@@ -73,21 +73,21 @@ module.exports = class AzureController {
     const action = 'write';
     this.logger.info(`${provider}:${service}:${action}`);
     this.logger.debug(JSON.stringify(request));
-    request.getTimer().start();
-    request.getTimer().stop();
-    const startTime = request.getTimer().getStartTime();
-    const endTime = request.getTimer().getEndTime();
-    const duration = request.getTimer().getDuration();
+
+    const startTime = new Date().getTime();
     await this.cosmos.write(request);
+    const endTime = new Date().getTime();
+
     const data = {
-      implemented: false,
+      implemented: true,
       startTime,
       endTime,
-      duration,
+      duration: (endTime - startTime),
       provider,
       service,
       action,
-      strategy: request.getStrategy()
+      strategy: request.getStrategy(),
+      payload: {}
     };
     return new GenericResponse({ status: 200, data });
   }
@@ -98,19 +98,23 @@ module.exports = class AzureController {
     const action = 'read';
     this.logger.info(`${provider}:${service}:${action}`);
     this.logger.debug(JSON.stringify(request));
-    request.getTimer().start();
-    request.getTimer().stop();
-    const startTime = request.getTimer().getStartTime();
-    const endTime = request.getTimer().getEndTime();
-    const duration = request.getTimer().getDuration();
+
+    const startTime = new Date().getTime();
+    const resp = await this.storage.read(request);
+    this.logger.debug(resp);
+    const storageReadResponse = new StorageReadResponse({ body: resp });
+    const endTime = new Date().getTime();
+
     const data = {
-      implemented: false,
+      implemented: true,
       startTime,
       endTime,
-      duration,
+      duration: (endTime - startTime),
       provider,
       service,
       action,
+      strategy: request.getStrategy(),
+      payload: storageReadResponse.getPayload()
     };
     return new GenericResponse({ status: 200, data });
   }
@@ -121,19 +125,22 @@ module.exports = class AzureController {
     const action = 'write';
     this.logger.info(`${provider}:${service}:${action}`);
     this.logger.debug(JSON.stringify(request));
-    request.getTimer().start();
-    request.getTimer().stop();
-    const startTime = request.getTimer().getStartTime();
-    const endTime = request.getTimer().getEndTime();
-    const duration = request.getTimer().getDuration();
+
+    const startTime = new Date().getTime();
+    const resp = await this.storage.write(request);
+    const storageWriteResponse = new StorageWriteResponse(resp);
+    const endTime = new Date().getTime();
+
     const data = {
-      implemented: false,
+      implemented: true,
       startTime,
       endTime,
-      duration,
+      duration: (endTime - startTime),
       provider,
       service,
       action,
+      strategy: request.getStrategy(),
+      payload: storageWriteResponse.getPayload()
     };
     return new GenericResponse({ status: 200, data });
   }

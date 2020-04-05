@@ -30,19 +30,18 @@ module.exports = class AwsController {
     const action = 'execute';
     this.logger.info(`${provider}:${service}:${action}`);
     this.logger.debug(JSON.stringify(request));
-    request.getTimer().start();
-    request.getTimer().stop();
-    const startTime = request.getTimer().getStartTime();
-    const endTime = request.getTimer().getEndTime();
-    const duration = request.getTimer().getDuration();
+
+    const startTime = new Date().getTime();
     const resp = await this.lambda.invoke(request);
     this.logger.debug(JSON.stringify(resp));
     const lambdaResponse = new LambdaResponse(resp);
+    const endTime = new Date().getTime();
+
     const data = {
       implemented: true,
       startTime,
       endTime,
-      duration,
+      duration: (endTime - startTime),
       provider,
       service,
       action,
@@ -59,23 +58,23 @@ module.exports = class AwsController {
     const action = 'write';
     this.logger.info(`${provider}:${service}:${action}`);
     this.logger.debug(JSON.stringify(request));
-    request.getTimer().start();
-    request.getTimer().stop();
-    const startTime = request.getTimer().getStartTime();
-    const endTime = request.getTimer().getEndTime();
-    const duration = request.getTimer().getDuration();
+
+    const startTime = new Date().getTime();
+    const resp = await this.dynamo.write(request);
+    const endTime = new Date().getTime();
+
+    this.logger.debug(JSON.stringify(resp));
     const data = {
       implemented: true,
       startTime,
       endTime,
-      duration,
+      duration: (endTime - startTime),
       provider,
       service,
       action,
-      strategy: request.getStrategy()
+      strategy: request.getStrategy(),
+      payload: {}
     };
-    const resp = await this.dynamo.write(request);
-    this.logger.debug(JSON.stringify(resp));
     return new GenericResponse({ status: 200, data });
   }
 
@@ -85,19 +84,18 @@ module.exports = class AwsController {
     const action = 'read';
     this.logger.info(`${provider}:${service}:${action}`);
     this.logger.debug(JSON.stringify(request));
-    request.getTimer().start();
-    request.getTimer().stop();
-    const startTime = request.getTimer().getStartTime();
-    const endTime = request.getTimer().getEndTime();
-    const duration = request.getTimer().getDuration();
+
+    const startTime = new Date().getTime();
     const resp = await this.dynamo.read(request);
     this.logger.debug(JSON.stringify(resp));
     const dynamoReadResponse = new DynamoReadResponse(resp);
+    const endTime = new Date().getTime();
+
     const data = {
       implemented: true,
       startTime,
       endTime,
-      duration,
+      duration: (endTime - startTime),
       provider,
       service,
       action,
@@ -114,19 +112,18 @@ module.exports = class AwsController {
     const action = 'read';
     this.logger.info(`${provider}:${service}:${action}`);
     this.logger.debug(JSON.stringify(request));
-    request.getTimer().start();
-    request.getTimer().stop();
-    const startTime = request.getTimer().getStartTime();
-    const endTime = request.getTimer().getEndTime();
-    const duration = request.getTimer().getDuration();
+
+    const startTime = new Date().getTime();
     const resp = await this.s3.read(request);
     this.logger.debug(JSON.stringify(resp));
     const s3ReadResponse = new S3ReadResponse(resp);
+    const endTime = new Date().getTime();
+
     const data = {
       implemented: true,
       startTime,
       endTime,
-      duration,
+      duration: (endTime - startTime),
       provider,
       service,
       action,
@@ -142,19 +139,18 @@ module.exports = class AwsController {
     const action = 'write';
     this.logger.info(`${provider}:${service}:${action}`);
     this.logger.debug(JSON.stringify(request));
-    request.getTimer().start();
-    request.getTimer().stop();
-    const startTime = request.getTimer().getStartTime();
-    const endTime = request.getTimer().getEndTime();
-    const duration = request.getTimer().getDuration();
+
+    const startTime = new Date().getTime();
     const resp = await this.s3.write(request);
     this.logger.debug(JSON.stringify(resp));
     const s3WriteResponse = new S3WriteResponse(resp);
+    const endTime = new Date().getTime();
+
     const data = {
       implemented: true,
       startTime,
       endTime,
-      duration,
+      duration: (endTime - startTime),
       provider,
       service,
       action,
