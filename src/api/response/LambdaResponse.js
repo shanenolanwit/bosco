@@ -28,6 +28,9 @@ module.exports = class LambdaResponse {
   }
 
   getPayload() {
-    return this.payload;
+    return {
+      status: this.status,
+      body: this.payload
+    };
   }
 };
