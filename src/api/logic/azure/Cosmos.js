@@ -29,7 +29,8 @@ module.exports = class Cosmos {
   }
 
   async write(writeToCosmosRequest) {
-    await this.createContainer(writeToCosmosRequest);
+    // TODO add a field to write request that specifies if you should create if not exists
+    // await this.createContainer(writeToCosmosRequest);
     return this.cosmosLib
       .database(this.database)
       .container(writeToCosmosRequest.getTableName())
