@@ -6,9 +6,9 @@ const S3WriteResponse = require('../api/response/S3WriteResponse');
 const S3ReadResponse = require('../api/response/S3ReadResponse');
 
 const PROVIDER = 'aws';
-const EXECUTE_SERVICE = 'lambda';
-const DATABASE_SERVICE = 'dynamodb';
-const FILE_STORAGE_SERVICE = 's3';
+const EXECUTE_SERVICE = 'fn:lambda';
+const DATABASE_SERVICE = 'db:dynamodb';
+const FILE_STORAGE_SERVICE = 'fs:s3';
 
 module.exports = class AwsController {
   constructor({
@@ -36,19 +36,20 @@ module.exports = class AwsController {
     this.logger.debug(JSON.stringify(resp));
     const lambdaResponse = new LambdaResponse(resp);
     const endTime = new Date().getTime();
-
+    const status = lambdaResponse.getStatus() || 500;
     const data = {
-      implemented: true,
+      status,
       startTime,
       endTime,
       duration: (endTime - startTime),
       provider,
       service,
       action,
+      transactionID: request.getTransactionID(),
       strategy: request.getStrategy(),
       payload: lambdaResponse.getPayload()
     };
-    const status = lambdaResponse.getStatus() || 500;
+
     return new GenericResponse({ status, data });
   }
 
@@ -65,13 +66,14 @@ module.exports = class AwsController {
 
     this.logger.debug(JSON.stringify(resp));
     const data = {
-      implemented: true,
+      status: 200,
       startTime,
       endTime,
       duration: (endTime - startTime),
       provider,
       service,
       action,
+      transactionID: request.getTransactionID(),
       strategy: request.getStrategy(),
       payload: {}
     };
@@ -92,13 +94,14 @@ module.exports = class AwsController {
     const endTime = new Date().getTime();
 
     const data = {
-      implemented: true,
+      status: 200,
       startTime,
       endTime,
       duration: (endTime - startTime),
       provider,
       service,
       action,
+      transactionID: request.getTransactionID(),
       strategy: request.getStrategy(),
       payload: dynamoReadResponse.getPayload()
     };
@@ -120,13 +123,14 @@ module.exports = class AwsController {
     const endTime = new Date().getTime();
 
     const data = {
-      implemented: true,
+      status: 200,
       startTime,
       endTime,
       duration: (endTime - startTime),
       provider,
       service,
       action,
+      transactionID: request.getTransactionID(),
       strategy: request.getStrategy(),
       payload: s3ReadResponse.getPayload()
     };
@@ -147,13 +151,14 @@ module.exports = class AwsController {
     const endTime = new Date().getTime();
 
     const data = {
-      implemented: true,
+      status: 200,
       startTime,
       endTime,
       duration: (endTime - startTime),
       provider,
       service,
       action,
+      transactionID: request.getTransactionID(),
       strategy: request.getStrategy(),
       payload: s3WriteResponse.getPayload()
     };

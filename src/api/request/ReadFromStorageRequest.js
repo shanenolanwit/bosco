@@ -2,21 +2,16 @@ const assert = require('assert');
 
 const GenericRequest = require('./GenericRequest');
 
-const DEFAULT_STRATEGY = 'default';
-
 module.exports = class ReadFromStorageRequest extends GenericRequest {
   constructor(deps) {
     super(deps);
     const { req } = deps;
     const {
-      bucketName, strategy, transactionID
+      bucketName
     } = req.body;
     assert(bucketName, 'bucketName is required');
-    assert(transactionID, 'transactionID is required');
-    this.strategy = strategy || DEFAULT_STRATEGY;
-    this.transactionID = transactionID;
     this.bucketName = bucketName;
-    this.key = `${strategy}_${transactionID}.json`;
+    this.key = `${this.strategy}_${this.transactionID}.json`;
   }
 
   getBucketName() {
@@ -25,13 +20,5 @@ module.exports = class ReadFromStorageRequest extends GenericRequest {
 
   getKey() {
     return this.key;
-  }
-
-  getStrategy() {
-    return this.strategy;
-  }
-
-  getTransactionID() {
-    return this.transactionID;
   }
 };

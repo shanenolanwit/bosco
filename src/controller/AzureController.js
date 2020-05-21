@@ -6,9 +6,9 @@ const StorageReadResponse = require('../api/response/StorageReadResponse');
 const StorageWriteResponse = require('../api/response/StorageWriteResponse');
 
 const PROVIDER = 'azure';
-const EXECUTE_SERVICE = 'function';
-const DATABASE_SERVICE = 'cosmosdb';
-const FILE_STORAGE_SERVICE = 'storage';
+const EXECUTE_SERVICE = 'fn:function';
+const DATABASE_SERVICE = 'db:cosmosdb';
+const FILE_STORAGE_SERVICE = 'fs:storage';
 
 module.exports = class AzureController {
   constructor({
@@ -36,19 +36,20 @@ module.exports = class AzureController {
     this.logger.debug(JSON.stringify(resp));
     const functionAppResponse = new FunctionAppResponse(resp);
     const endTime = new Date().getTime();
-
+    const status = functionAppResponse.getStatus() || 500;
     const data = {
-      implemented: true,
+      status,
       startTime,
       endTime,
       duration: (endTime - startTime),
       provider,
       service,
       action,
+      transactionID: request.getTransactionID(),
       strategy: request.getStrategy(),
       payload: functionAppResponse.getPayload()
     };
-    return new GenericResponse({ status: 200, data });
+    return new GenericResponse({ status, data });
   }
 
   async cosmosRead(request) {
@@ -64,13 +65,14 @@ module.exports = class AzureController {
     const endTime = new Date().getTime();
 
     const data = {
-      implemented: true,
+      status: 200,
       startTime,
       endTime,
       duration: (endTime - startTime),
       provider,
       service,
       action,
+      transactionID: request.getTransactionID(),
       strategy: request.getStrategy(),
       payload: cosmosReadResponse.getPayload()
     };
@@ -89,13 +91,14 @@ module.exports = class AzureController {
     const endTime = new Date().getTime();
 
     const data = {
-      implemented: true,
+      status: 200,
       startTime,
       endTime,
       duration: (endTime - startTime),
       provider,
       service,
       action,
+      transactionID: request.getTransactionID(),
       strategy: request.getStrategy(),
       payload: {}
     };
@@ -111,18 +114,18 @@ module.exports = class AzureController {
 
     const startTime = new Date().getTime();
     const resp = await this.storage.read(request);
-    this.logger.debug(resp);
     const storageReadResponse = new StorageReadResponse({ body: resp });
     const endTime = new Date().getTime();
 
     const data = {
-      implemented: true,
+      status: 200,
       startTime,
       endTime,
       duration: (endTime - startTime),
       provider,
       service,
       action,
+      transactionID: request.getTransactionID(),
       strategy: request.getStrategy(),
       payload: storageReadResponse.getPayload()
     };
@@ -142,13 +145,14 @@ module.exports = class AzureController {
     const endTime = new Date().getTime();
 
     const data = {
-      implemented: true,
+      status: 200,
       startTime,
       endTime,
       duration: (endTime - startTime),
       provider,
       service,
       action,
+      transactionID: request.getTransactionID(),
       strategy: request.getStrategy(),
       payload: storageWriteResponse.getPayload()
     };
