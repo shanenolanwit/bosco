@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+/* eslint-disable no-unused-vars */
 /* eslint-disable no-await-in-loop */
 const fetch = require('node-fetch');
 const fs = require('fs');
@@ -81,7 +83,7 @@ const post = async (endpoint, payload) => {
   return json;
 };
 
-const collect = async (endpoint, payload, transactionID) => {
+const collect = async (endpoint, payload) => {
   const myData = [];
   for (let i = 0; i < 1; i += 1) {
     // eslint-disable-next-line no-await-in-loop
@@ -121,30 +123,30 @@ const click = async () => {
     console.log(`round ${i} collect data started at ${new Date()}`);
     const transactionID = shortid.generate();
     await collect('http://localhost:3000/bosco/executeFunction',
-      payloadForFunction('aws', 'aws-nodejs-dev-sayHello', transactionID, 'BASE', 'yo'), transactionID);
+      payloadForFunction('aws', 'aws-nodejs-dev-sayHello', transactionID, 'BASE', 'yo'));
     await collect('http://localhost:3000/bosco/executeFunction',
-      payloadForFunction('azure', 'https://tx-cloudy-dayz.azurewebsites.net/api/HttpTrigger1', transactionID, 'BASE', 'yo'), transactionID);
+      payloadForFunction('azure', 'https://tx-cloudy-dayz.azurewebsites.net/api/HttpTrigger1', transactionID, 'BASE', 'yo'));
 
 
     await collect('http://localhost:3000/bosco/writeToDatabase',
-      payloadForDatabaseWrite('aws', 'hellodb', transactionID, 'BASE', 'yo'), transactionID);
+      payloadForDatabaseWrite('aws', 'hellodb', transactionID, 'BASE', 'yo'));
     await collect('http://localhost:3000/bosco/writeToDatabase',
-      payloadForDatabaseWrite('azure', 'transaction', transactionID, 'BASE', 'yo'), transactionID);
+      payloadForDatabaseWrite('azure', 'transaction', transactionID, 'BASE', 'yo'));
 
     await collect('http://localhost:3000/bosco/readFromDatabase',
-      payloadForDatabaseRead('aws', 'hellodb', transactionID, 'BASE'), transactionID);
+      payloadForDatabaseRead('aws', 'hellodb', transactionID, 'BASE'));
     await collect('http://localhost:3000/bosco/readFromDatabase',
-      payloadForDatabaseRead('azure', 'transaction', transactionID, 'BASE'), transactionID);
+      payloadForDatabaseRead('azure', 'transaction', transactionID, 'BASE'));
 
     await collect('http://localhost:3000/bosco/writeToFile',
-      payloadForFileWrite('aws', 'cloudy-dayz-bucket', transactionID, 'BASE'), transactionID);
+      payloadForFileWrite('aws', 'cloudy-dayz-bucket', transactionID, 'BASE'));
     await collect('http://localhost:3000/bosco/writeToFile',
-      payloadForFileWrite('azure', 'cloudy-dayz-bucket', transactionID, 'BASE', 'yo'), transactionID);
+      payloadForFileWrite('azure', 'cloudy-dayz-bucket', transactionID, 'BASE', 'yo'));
 
     await collect('http://localhost:3000/bosco/readFromFile',
-      payloadForFileRead('aws', 'cloudy-dayz-bucket', transactionID, 'BASE', 'yo'), transactionID);
+      payloadForFileRead('aws', 'cloudy-dayz-bucket', transactionID, 'BASE', 'yo'));
     await collect('http://localhost:3000/bosco/readFromFile',
-      payloadForFileRead('azure', 'cloudy-dayz-bucket', transactionID, 'BASE', 'yo'), transactionID);
+      payloadForFileRead('azure', 'cloudy-dayz-bucket', transactionID, 'BASE', 'yo'));
 
     // console.log(`round ${i} collect data finished at ${new Date()}`);
     // const timeout = FIVE_MINUTES;
