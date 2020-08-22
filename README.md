@@ -4,55 +4,22 @@
 
 ![bosco](./bosco.jpg?raw=true "bosco")
 
-  * [About](#about)
-  * [Prerequisites](#Prerequisites)
-  * [API](#api)
-    + [Health Check](#health-check)
-      - [Request Headers](#request-headers)
-      - [Responses](#responses)
-      - [Response Headers](#response-headers)
-      - [Response Body](#response-body)
-    + [Execute Function](#execute-function)
-      - [Request Headers](#request-headers-1)
-      - [Request Body](#request-body)
-        * [execute lambda](#execute-lambda)
-        * [execute function-app](#execute-function-app)
-      - [Responses](#responses-1)
-      - [Response Headers](#response-headers-1)
-      - [Response Body](#response-body-1)
-    + [Write to DB](#write-to-db)
-      - [Request Headers](#request-headers-2)
-      - [Request Body](#request-body-1)
-        * [write to dynamo](#write-to-dynamo)
-        * [write to cosmos](#write-to-cosmos)
-      - [Responses](#responses-2)
-      - [Response Headers](#response-headers-2)
-      - [Response Body](#response-body-2)
-    + [Read from DB](#read-from-db)
-      - [Request Headers](#request-headers-3)
-      - [Request Body](#request-body-2)
-        * [read from dynamo](#read-from-dynamo)
-        * [read from cosmos](#read-from-cosmos)
-      - [Responses](#responses-3)
-      - [Response Headers](#response-headers-3)
-      - [Response Body](#response-body-3)
-    + [Write to File](#write-to-file)
-      - [Request Headers](#request-headers-4)
-      - [Request Body](#request-body-3)
-        * [write to s3](#write-to-s3)
-        * [write to azure storage](#write-to-azure-storage)
-      - [Responses](#responses-4)
-      - [Response Headers](#response-headers-4)
-      - [Response Body](#response-body-4)
-    + [Read from File](#read-from-file)
-      - [Request Headers](#request-headers-5)
-      - [Request Body](#request-body-4)
-        * [read from s3](#read-from-s3)
-        * [read from azure storage](#read-from-azure-storage)
-      - [Responses](#responses-5)
-      - [Response Headers](#response-headers-5)
-      - [Response Body](#response-body-5)
-* [Dependencies](#dependencies)
+- [About](#about)
+- [Prerequisites](#prerequisites)
+- [Start the Application](#start-the-application)
+- [API](#api)
+  * [Health Check](#health-check)
+  * [Execute Function](#execute-function)
+  * [Write to DB](#write-to-db)
+  * [Read from DB](#read-from-db)
+  * [Write to File](#write-to-file)
+  * [Read from File](#read-from-file)
+- [Sample CURL Requests](#sample-curl-requests)
+  * [Execute Function](#execute-function-1)
+  * [File IO](#file-io)
+  * [Database Transactions](#database-transactions)
+- [CollectorJS](#collectorjs)
+- [Dependencies](#dependencies)
 
 ## About
 
@@ -70,11 +37,36 @@ Install node modules
 ```
 npm i
 ```
+Rename the `.env.sample` file to `.env`
+```
+mv .env.sample .env
+```
+Update the `.env` file to match your own environment. These values are required 
+to allow the bosco application gain access to your multi cloud infrastructure.
+```
+NODE_SERVER_PORT=3000
+BOSCO_API_KEY=
+LOG_LEVEL=debug
+DEFAULT_PROVIDER=aws
+AWS_REGION=eu-west-1
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+COSMOS_DATABASE=
+COSMOS_ENDPOINT=
+COSMOS_KEY=
+STORAGE_ACCOUNT_NAME=
+STORAGE_KEY=
+```
+
+## Start the Application
 Start the server
 ```
 npm run local
 ```
+The `start` command in `package.json` is not used here, the `index.js` file can be used as an entry point if deploying the bosco api to an AWS Lambda using `serverless` or similar frameworks.  
 
+***
+***
 ## API
 
 ***
@@ -134,7 +126,7 @@ npm run local
 ```json
 {
 	"provider": "aws",
-	"functionName": "MY_FUNCTION_NAME",
+	"functionName": "AWS_LAMBDA_NAME",
 	"strategy": "STRATEGY_TYPE",
 	"transactionID": "SOME_UNIQUE_IDENTIFIER",
 	"payload" : {
@@ -489,6 +481,164 @@ npm run local
         }
     }
 }
+```
+## Sample CURL Requests
+The Authorization value in the following CURL requests is `abc123`, this should be modified to match the `BOSCO_API_KEY` value from your own `.env` file
+### Execute Function
+#### Invoke AWS Lambda
+```
+curl --location --request POST 'localhost:3000/bosco/executeFunction' \
+--header 'Content-Type: application/json' --header 'Authorization: abc123' \
+--data-raw '{
+	"provider": "aws",
+	"functionName": "aws-nodejs-dev-sayHello",
+	"transactionID": "12345",
+	"strategy": "STRATEGYA",
+	"payload" : {
+		"timestamp": 1234321,
+		"message": "hello world"
+	}
+}'
+```
+#### Invoke Azure Function
+```
+curl --location --request POST 'localhost:3000/bosco/executeFunction' \
+--header 'Content-Type: application/json' --header 'Authorization: abc123' \
+--data-raw '{
+	"provider": "azure",
+	"functionName": "https://tx-cloudy-dayz.azurewebsites.net/api/HttpTrigger1",
+	"transactionID": "12345",
+	"strategy": "STRATEGYA",
+	"payload" : {
+		"timestamp": 1234321,
+		"message": "hello world"
+	}
+}'
+```
+### File IO
+#### Write to AWS S3
+```
+curl --location --request POST 'localhost:3000/bosco/writeToFile' \
+--header 'Content-Type: application/json' --header 'Authorization: abc123' \
+--data-raw '{
+    "provider": "aws",
+	"bucketName": "cloudy-dayz-bucket",
+	"strategy": "STRATEGYA",
+	"transactionID": "1a",
+	"encryptionMethod": "AES256",
+	"storageClass": "STANDARD_IA",
+	"timestamp": 1234321,
+	"message": "hello s3"
+}'
+```
+#### Read from AWS S3
+```
+curl --location --request POST 'localhost:3000/bosco/readFromFile' \
+--header 'Content-Type: application/json' --header 'Authorization: abc123' \
+--data-raw '{
+    "provider": "aws",
+	"bucketName": "cloudy-dayz-bucket",
+	"transactionID": "1a",
+	"strategy": "STRATEGYA"
+}'
+```
+#### Write to Azure Storage
+```
+curl --location --request POST 'localhost:3000/bosco/writeToFile' \
+--header 'Content-Type: application/json' --header 'Authorization: abc123' \
+--data-raw '{
+    "provider": "azure",
+	"bucketName": "cloudy-dayz-bucket",
+	"strategy": "STRATEGYA",
+	"transactionID": "1a",
+	"timestamp": 1234321,
+	"message": "hello azure"
+}' 
+```
+#### Read from Azure Storage
+```
+curl --location --request POST 'localhost:3000/bosco/readFromFile' \
+--header 'Content-Type: application/json' --header 'Authorization: abc123' \
+--data-raw '{
+    "provider": "azure",
+	"bucketName": "cloudy-dayz-bucket",
+	"transactionID": "1a",
+	"strategy": "STRATEGYA"
+}'
+```
+### Database Transactions
+#### Write to AWS Dynamo
+```
+curl --location --request POST 'localhost:3000/bosco/writeToDatabase' \
+--header 'Content-Type: application/json' --header 'Authorization: abc123' \
+--data-raw '{
+    "provider": "aws",
+	"tableName": "hellodb",
+	"strategy": "STRATEGYC",
+	"transactionID": "1111aa",
+	"timestamp": 1234321,
+	"message": "hello dynamo"
+}'
+```
+#### Read from AWS Dynamo
+```
+curl --location --request POST 'localhost:3000/bosco/readFromDatabase' \
+--header 'Content-Type: application/json' --header 'Authorization: abc123' \
+--data-raw '{
+	"provider": "aws",
+	"tableName": "hellodb",
+	"strategy": "STRATEGYC",
+	"transactionID": "1111aa"
+}' -v
+```
+#### Write to Azure Cosmos
+```
+curl --location --request POST 'localhost:3000/bosco/writeToDatabase' \
+--header 'Content-Type: application/json' --header 'Authorization: abc123' \
+--data-raw '{
+    "provider": "azure",
+	"tableName": "transaction",
+	"strategy": "STRATEGYC",
+	"transactionID": "1111aa",
+	"timestamp": 1234321,
+	"message": "hello cosmos"
+}'
+```
+#### Read From Azure Cosmos
+```
+curl --location --request POST 'localhost:3000/bosco/readFromDatabase' \
+--header 'Content-Type: application/json' --header 'Authorization: abc123' \
+--data-raw '{
+	"provider": "azure",
+	"tableName": "transaction",
+	"strategy": "STRATEGYC",
+	"transactionID": "1111aa"
+}
+```
+
+## CollectorJS
+The `collector.js` script found at the project route is a template NodeJS file that can be used to automate your bosco api tests and record the performance results. Delays, function names, bucket names etc can all be modified to suit your own requirements. Results of each operation will be recorded in the `tx.csv` file in a `results` directory.
+
+The format of each line follows the pattern 
+```
+status,startTime,endTime,duration,provider,service,action,transactionID,strategy
+```
+
+Sample `results/tx.csv` snippet:
+```
+200,1590048965297,1590048965519,222,"aws","fn:lambda","execute","OOu2UETsH","BASE"
+200,1590048965533,1590048965882,349,"azure","fn:function","execute","OOu2UETsH","BASE"
+200,1590048965887,1590048966053,166,"aws","db:dynamodb","write","OOu2UETsH","BASE"
+200,1590048966057,1590048966781,724,"azure","db:cosmosdb","write","OOu2UETsH","BASE"
+200,1590048966784,1590048966865,81,"aws","db:dynamodb","read","OOu2UETsH","BASE"
+200,1590048966868,1590048967042,174,"azure","db:cosmosdb","read","OOu2UETsH","BASE"
+200,1590048967046,1590048967227,181,"aws","fs:s3","write","OOu2UETsH","BASE"
+200,1590048967231,1590048967617,386,"azure","fs:storage","write","OOu2UETsH","BASE"
+200,1590048967621,1590048967755,134,"aws","fs:s3","read","OOu2UETsH","BASE"
+200,1590048967758,1590048967804,46,"azure","fs:storage","read","OOu2UETsH","BASE"
+200,1590048967860,1590048967950,90,"aws","fn:lambda","execute","C2_NxCYhc","BASE"
+200,1590048967953,1590048968133,180,"azure","fn:function","execute","C2_NxCYhc","BASE"
+...
 ```
 ## Dependencies
 ```json
