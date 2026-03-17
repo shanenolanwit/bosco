@@ -1,0 +1,63 @@
+name: snapshot
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # every 5 minutes
+  workflow_dispatch:        # allow manual runs too
+
+permissions:
+  id-token: write   # required for OIDC token
+  contents: read
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-west-1
+
+      - name: Fetch snapshot
+        run: |
+          python3 - <<'EOF'
+          import datetime
+          import sys
+          from pathlib import Path
+          from urllib.request import urlopen, Request
+          from urllib.error import URLError, HTTPError
+
+          timestamp_ms = int(datetime.datetime.now().timestamp() * 1000)
+          url = f"http://tbay.home.dyndns.org/jpg/1/image.jpg?timestamp={timestamp_ms}"
+          output = Path("/tmp/latest.jpg")
+
+          print(f"Fetching snapshot from {url} ...")
+          req = Request(url, headers={"User-Agent": "tramoreorless-fetcher/1.0"})
+          try:
+              with urlopen(req, timeout=15) as resp:
+                  content_type = resp.headers.get("Content-Type", "")
+                  data = resp.read()
+          except HTTPError as e:
+              print(f"HTTP error {e.code}: {e.reason}", file=sys.stderr)
+              sys.exit(1)
+          except URLError as e:
+              print(f"URL error: {e.reason}", file=sys.stderr)
+              sys.exit(1)
+
+          if not data:
+              print("Error: empty response received.", file=sys.stderr)
+              sys.exit(1)
+
+          output.write_bytes(data)
+          print(f"Saved {len(data):,} bytes -> {output}")
+          if "text/html" in content_type:
+              print("Warning: response Content-Type is text/html — may be an HTML page, not a JPEG.", file=sys.stderr)
+          EOF
+
+      - name: Upload to S3
+        run: |
+          aws s3 cp /tmp/latest.jpg \
+            s3://${{ secrets.S3_BUCKET }}/snapshots/latest.jpg \
+            --content-type image/jpeg
