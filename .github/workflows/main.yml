@@ -2,7 +2,7 @@ name: snapshot
 
 on:
   schedule:
-    - cron: '*/5 * * * *'  # every 5 minutes
+    - cron: '*/5 6-21 * * *'  # every 5 minutes from 6:00 to 21:55
   workflow_dispatch:        # allow manual runs too
 
 permissions:
@@ -60,4 +60,5 @@ jobs:
         run: |
           aws s3 cp /tmp/latest.jpg \
             s3://${{ secrets.S3_BUCKET }}/snapshots/latest.jpg \
-            --content-type image/jpeg
+            --content-type image/jpeg \
+            --cache-control "max-age=300"
