@@ -2,7 +2,7 @@ name: snapshot
 
 on:
   schedule:
-    - cron: '*/5 6-21 * * *'  # every 5 minutes from 6:00 to 21:55
+    - cron: '*/5 4-22 * * *'  # every 5 minutes from 6:00 to 21:55
   workflow_dispatch:        # allow manual runs too
 
 permissions:
